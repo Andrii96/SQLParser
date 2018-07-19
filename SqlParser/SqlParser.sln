@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2018
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlParser.Parser", "SqlParser.Parser\SqlParser.Parser.csproj", "{3FE4A7F1-81EC-4CB7-87D9-0028518B4E0E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlParser.Client", "SqlParser.Client\SqlParser.Client.csproj", "{9942BED4-6AFD-4812-B4EC-E98C8B51BF69}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3FE4A7F1-81EC-4CB7-87D9-0028518B4E0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3FE4A7F1-81EC-4CB7-87D9-0028518B4E0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3FE4A7F1-81EC-4CB7-87D9-0028518B4E0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3FE4A7F1-81EC-4CB7-87D9-0028518B4E0E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9942BED4-6AFD-4812-B4EC-E98C8B51BF69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9942BED4-6AFD-4812-B4EC-E98C8B51BF69}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9942BED4-6AFD-4812-B4EC-E98C8B51BF69}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9942BED4-6AFD-4812-B4EC-E98C8B51BF69}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {42756386-8286-4D1A-BA1D-CC9AFD8E950B}
+	EndGlobalSection
+EndGlobal

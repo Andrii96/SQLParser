@@ -1,0 +1,117 @@
+﻿using SqlParser.Parser.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+
+namespace SqlParser.Parser.Models
+{
+    public class WhereGroup
+    {
+        public List<WhereModel> WhereStatements { get; set; }
+
+        public List<WhereGroup> WhereGroups { get; set; }
+
+        public bool IsExternal { get; set; } = false;
+
+        public static WhereGroup ToWhereGroup(string whereString)
+        {
+            var whereStringArray = whereString.ToCharArray();
+            FullWhereModel parent = null;
+            FullWhereModel current = null;
+            for(int i = 0; i < whereStringArray.Length-1; i++)
+            {
+                if(whereStringArray[i] == '(')
+                {
+                    parent = current;
+                    current = new FullWhereModel() { Parent = parent,Group=new WhereGroup() { WhereGroups = new List<WhereGroup>(), WhereStatements = new List<WhereModel>() } };
+                    continue;
+                }
+                else if(whereStringArray[i] == ')')
+                {
+                    if (current.Parent != null)
+                    {
+                        current.Parent.Group.AddNewGroup(current.Group);
+                        current = current.Parent;
+                    }
+                    else
+                    {
+                        var group = current.Group;
+                        current = new FullWhereModel { Parent = null,Group = new WhereGroup() { WhereGroups = new List<WhereGroup>(), WhereStatements = new List<WhereModel>() } };
+                        current.Group.AddNewGroup(group);
+                    }
+                }
+                else
+                {
+                    var groupEnd = i;
+                    while(whereStringArray[groupEnd]!='(' && whereStringArray[groupEnd] != ')' && groupEnd < whereStringArray.Length-1)
+                    {
+                        groupEnd++;
+                    }
+                    var groupString = whereString.Substring(i, groupEnd - i);
+                    if(groupString.Trim(' ') == string.Empty)
+                    {
+                        i = groupEnd - 1;
+                        continue;
+                    }
+                    bool isOr = groupString.Trim(' ') == "OR";
+                    bool isAnd = groupString.Trim(' ') == "AND";
+                    if (isOr || isAnd)
+                    {
+                        var lastGroup = current.Group.WhereGroups.LastOrDefault();
+                        lastGroup.WhereStatements.LastOrDefault().UseOr = isOr;
+                        i = groupEnd - 1;
+                        continue;
+                    }
+                    var wheres = ToWhereModelList(groupString);
+                    if (current == null)
+                    {
+                        current = new FullWhereModel { Parent = parent,Group = new WhereGroup() { WhereGroups = new List<WhereGroup>(), WhereStatements=new List<WhereModel>()} };
+                        parent = current;
+                    }
+                    current.Group.AddWhereStatements(wheres);
+                    i = groupEnd - 1;
+                } 
+            }
+            return current.Group;
+        }
+
+        private static List<WhereModel> ToWhereModelList(string groupString)
+        {
+            var list = new List<WhereModel>();
+            if (string.IsNullOrEmpty(groupString))
+            {
+                return null;
+            }
+            var pattern = @"(.*?)\.\W*(\w+)\s*(IS\s*NOT|IS|[<,>,=]|<>)\s*(\w+)\s*(\w*)";
+            var matches = groupString.GetMatchWithPattern(pattern);
+          
+            while (matches.Success)
+            {
+                var columnName = matches.Groups[2].Value;
+                var comparison = matches.Groups[3].Value;
+                var compareTo = matches.Groups[4].Value;
+                var useOr = matches.Groups[5].Value.ToUpper() == "OR";
+                var whereModel = new WhereModel
+                {
+                    ColumnAlias = columnName,
+                    CompareTo = compareTo,
+                    Comparison = comparison,
+                    UseOr = useOr
+                };
+                list.Add(whereModel);
+                matches = matches.NextMatch();
+            }
+            var trimmedWhereString = groupString.TrimStart(' ');
+            var lastWhere = list.LastOrDefault();
+            if (lastWhere != null)
+            {
+                lastWhere.UseOr = trimmedWhereString.StartsWith("OR");
+            }
+            return list;
+        }
+        
+    }
+}
