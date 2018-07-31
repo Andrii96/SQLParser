@@ -13,7 +13,7 @@ namespace SqlParser.Parser.Models
 
         public WhereGroup JoinCondition { get; set; }
 
-        public static JoinModel Parse(string joinStatement,List<TableInfoModel> allTables)
+        public static FullJoinModel Parse(string joinStatement,List<TableInfoModel> allTables)
         {
             if (string.IsNullOrEmpty(joinStatement))
             {
@@ -30,7 +30,7 @@ namespace SqlParser.Parser.Models
                     }
                     return table.Name == matches.Groups[1].Value;
                 });
-                return new JoinModel
+                var joinModel =  new JoinModel
                 {
                     ToTable = new TableViewModel
                     {
@@ -52,6 +52,12 @@ namespace SqlParser.Parser.Models
                         IsExternal = false,
                         WhereGroups = new List<WhereGroup>()
                     }
+                };
+
+                return new FullJoinModel
+                {
+                    FromTable = matches.Groups[3].Value,
+                    Join = joinModel
                 };
               
             }

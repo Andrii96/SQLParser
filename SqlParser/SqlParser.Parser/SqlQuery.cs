@@ -23,16 +23,14 @@ namespace SqlParser.Parser
         public List<QueryTableModel> ParseToQueryTableModelList()
         {
             var joins = SqlCommand.GetJoins();
-            var fromTable = SqlCommand.GetFromTable();
-            var where = SqlCommand.GetWhere();
+            var fromTable = SqlCommand.FromTable;
             var hasGroupBy = SqlCommand.HasGroupBy;
             var orderBys = SqlCommand.GetOrderBys();
 
             var firstQuery = new QueryTableModel
             {
-                Filters = new List<WhereGroup> { where },
-                Joins = joins,
-                TableId = fromTable.Id,
+                Joins = joins.Where(join=>join.FromTable == fromTable.Name).Select(join=>join.Join).ToList(),
+                Id = fromTable.Id,
                 TableName = fromTable.Name,
                 TableSchema = fromTable.Schema,
                 ExplicitFilters = new List<string>(),
@@ -49,12 +47,11 @@ namespace SqlParser.Parser
                 var query = new QueryTableModel
                 {
                     SelectedColumns = GetColumnsFromTable(table.Name, table.TableAlias),
-                    TableId = table.Id,
+                    Id = table.Id,
                     TableName = table.Name,
                     TableSchema = table.Schema,
-                    Filters = new List<WhereGroup>(),
                     ExplicitFilters = new List<string>(),
-                    Joins = new List<JoinModel>(),
+                    Joins = joins.Where(join => join.FromTable == table.Name).Select(join => join.Join).ToList()??new List<JoinModel>(),
                     GroupByColumns = new List<string>(),
                     Sortings = new List<OrderByModel>(),
                     Functions = new List<FunctionModel>()

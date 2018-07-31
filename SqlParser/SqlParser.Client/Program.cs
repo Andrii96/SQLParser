@@ -31,6 +31,7 @@ namespace SqlParser.Client
                     CalculatedColumns = new List<CalculatedColumnModel>(),
                     ColorRules = new List<ColorRuleModel>(),
                     SelectDistinct = command.Distinct,
+                    Filters = new List<WhereGroup> { command.GetWhere() }
                 },
                 PagingModel = new PaginationModel
                 {
@@ -41,7 +42,7 @@ namespace SqlParser.Client
 
             var json = JsonConvert.SerializeObject(pagedQuery);
             var filePath = Path.GetDirectoryName(args[0]);
-            var fileName = Path.GetFileNameWithoutExtension(args[0]) + "PagedQueryModel.txt";
+            var fileName = Path.GetFileNameWithoutExtension(args[0]) + "JsonFormat.txt";
             var fullPath = Path.Combine(filePath, fileName);
             if (!File.Exists(fullPath))
             {

@@ -8,6 +8,8 @@ namespace SqlParser.Parser.Models
 {
     public class ComparisonModel
     {
+        public long TableId { get; set; }
+
         public string ColumnAlias { get; set; }
 
         public string Comparison { get; set; }

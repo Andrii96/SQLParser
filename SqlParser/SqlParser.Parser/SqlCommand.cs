@@ -19,6 +19,8 @@ namespace SqlParser.Parser
         public bool HasGroupBy => SqlScript.GetMatchWithPattern(@"group by") != null;
 
         public bool Distinct => SqlScript.GetMatchWithPattern(@"distinct") != null;
+
+        public TableInfoModel FromTable { get; private set; }
         #endregion
 
         #region Constructor
@@ -27,12 +29,14 @@ namespace SqlParser.Parser
         {
             SqlScript = sqlScript;
             AllTables = GetTables();
+            FromTable = GetFromTable();
+            //AllTables.Add(GetFromTable());
         }
         #endregion
 
         #region Methods
         
-        public TableInfoModel GetFromTable()
+        private TableInfoModel GetFromTable()
         {
             var table = GetFromTableName();
             return TableInfoModel.Parse(table.Item1,table.Item2);
@@ -43,7 +47,7 @@ namespace SqlParser.Parser
             return GetAllSelectedColumns(); 
         }
 
-        public List<JoinModel> GetJoins()
+        public List<FullJoinModel> GetJoins()
         {
             var joinsString = GetJoinsString();
             return joinsString.Select(join => JoinModel.Parse(join,AllTables)).ToList();
@@ -52,7 +56,10 @@ namespace SqlParser.Parser
         public WhereGroup GetWhere()
         {
             var whereString = GetWhereString();
-            return WhereGroup.ToWhereGroup(whereString);
+            var allTables = new List<TableInfoModel>();
+            allTables.AddRange(AllTables);
+            allTables.Add(FromTable);
+            return WhereGroup.ToWhereGroup(whereString,allTables);
         }
 
         public List<OrderByModel> GetOrderBys()

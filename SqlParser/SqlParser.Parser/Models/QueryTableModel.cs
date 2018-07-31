@@ -8,7 +8,7 @@ namespace SqlParser.Parser.Models
 {
     public class QueryTableModel
     {
-        public long TableId { get; set; }
+        public long Id { get; set; }
 
         public string TableName { get; set; }
 
@@ -18,7 +18,7 @@ namespace SqlParser.Parser.Models
 
         public List<JoinModel> Joins { get; set; }
 
-        public List<WhereGroup> Filters { get; set; }
+        //public List<WhereGroup> Filters { get; set; }
 
         public List<string> ExplicitFilters { get; set; }
 

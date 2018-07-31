@@ -50,6 +50,7 @@
     <Compile Include="Models\ColorRuleModel.cs" />
     <Compile Include="Models\ColumnModel.cs" />
     <Compile Include="Models\ComparisonModel.cs" />
+    <Compile Include="Models\FullJoinModel.cs" />
     <Compile Include="Models\FullWhereModel.cs" />
     <Compile Include="Models\FunctionModel.cs" />
     <Compile Include="Models\OrderByModel.cs" />

@@ -10,6 +10,8 @@ namespace SqlParser.Parser.Models
     {
         public List<QueryTableModel> TableQueries { get; set; }
 
+        public List<WhereGroup> Filters { get; set; }
+
         public bool SelectDistinct { get; set; }
 
         public bool ShowDetails { get; set; } = true;

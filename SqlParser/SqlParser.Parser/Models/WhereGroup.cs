@@ -16,8 +16,12 @@ namespace SqlParser.Parser.Models
 
         public bool IsExternal { get; set; } = false;
 
-        public static WhereGroup ToWhereGroup(string whereString)
+        public static WhereGroup ToWhereGroup(string whereString,List<TableInfoModel> allTables)
         {
+            if (string.IsNullOrEmpty(whereString))
+            {
+                return new WhereGroup() { WhereGroups = new List<WhereGroup>(),WhereStatements = new List<WhereModel>()};
+            }
             var whereStringArray = whereString.ToCharArray();
             FullWhereModel parent = null;
             FullWhereModel current = null;
@@ -46,7 +50,7 @@ namespace SqlParser.Parser.Models
                 else
                 {
                     var groupEnd = i;
-                    while(whereStringArray[groupEnd]!='(' && whereStringArray[groupEnd] != ')' && groupEnd < whereStringArray.Length-1)
+                    while(groupEnd < whereStringArray.Length && whereStringArray[groupEnd]!='(' && whereStringArray[groupEnd] != ')' )
                     {
                         groupEnd++;
                     }
@@ -65,7 +69,7 @@ namespace SqlParser.Parser.Models
                         i = groupEnd - 1;
                         continue;
                     }
-                    var wheres = ToWhereModelList(groupString);
+                    var wheres = ToWhereModelList(groupString, allTables);
                     if (current == null)
                     {
                         current = new FullWhereModel { Parent = parent,Group = new WhereGroup() { WhereGroups = new List<WhereGroup>(), WhereStatements=new List<WhereModel>()} };
@@ -78,24 +82,26 @@ namespace SqlParser.Parser.Models
             return current.Group;
         }
 
-        private static List<WhereModel> ToWhereModelList(string groupString)
+        private static List<WhereModel> ToWhereModelList(string groupString, List<TableInfoModel> allTables)
         {
             var list = new List<WhereModel>();
             if (string.IsNullOrEmpty(groupString))
             {
                 return null;
             }
-            var pattern = @"(.*?)\.\W*(\w+)\s*(IS\s*NOT|IS|[<,>,=]|<>)\s*(\w+)\s*(\w*)";
+            var pattern = @"(.*?)\.\W*(\w+)\s*(IS\s*NOT|IS|LIKE|[<,>,=]|<>)\s*('.*?'|\w+)\s*(\w*)";
             var matches = groupString.GetMatchWithPattern(pattern);
           
             while (matches.Success)
             {
+                var tableName = GetTableNameFromString(matches.Groups[1].Value);
                 var columnName = matches.Groups[2].Value;
                 var comparison = matches.Groups[3].Value;
                 var compareTo = matches.Groups[4].Value;
                 var useOr = matches.Groups[5].Value.ToUpper() == "OR";
                 var whereModel = new WhereModel
                 {
+                    TableId = allTables.FirstOrDefault(t=>t.TableAlias.Trim(' ') == tableName.Trim(' ')).Id,
                     ColumnAlias = columnName,
                     CompareTo = compareTo,
                     Comparison = comparison,
@@ -111,6 +117,23 @@ namespace SqlParser.Parser.Models
                 lastWhere.UseOr = trimmedWhereString.StartsWith("OR");
             }
             return list;
+        }
+
+        private static string GetTableNameFromString(string str)
+        {
+            var strChars = str.ToCharArray();
+             Array.Reverse(strChars);
+            var tableNameString = string.Empty;
+            for(int i=0; i < strChars.Length; i++)
+            {
+                if (!char.IsLetterOrDigit(strChars[i]))
+                {
+                    break;
+                }
+                tableNameString += strChars[i];
+            }
+
+            return new String(tableNameString.Reverse().ToArray());
         }
         
     }
