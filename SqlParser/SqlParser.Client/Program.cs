@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using SqlParser.Parser;
+using SqlParser.Parser.Helpers;
 using SqlParser.Parser.Models;
 using System;
 using System.Collections.Generic;
@@ -21,8 +22,7 @@ namespace SqlParser.Client
             }
             var sqlScript = File.ReadAllText(args[0]);
             var command = new SqlCommand(sqlScript);
-            var sqlQueryParser = new SqlQueryParser(command);
-            var queries = sqlQueryParser.ParseToQueryTableModelList();
+            var queries = command.ParseToQueryTableModelList();
             var pagedQuery = new PagedQueryModel
             {
                 Query = new QueryModel

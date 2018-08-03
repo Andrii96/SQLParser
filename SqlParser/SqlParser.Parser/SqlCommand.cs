@@ -30,7 +30,6 @@ namespace SqlParser.Parser
             SqlScript = sqlScript;
             AllTables = GetTables();
             FromTable = GetFromTable();
-            //AllTables.Add(GetFromTable());
         }
         #endregion
 
@@ -50,7 +49,10 @@ namespace SqlParser.Parser
         public List<FullJoinModel> GetJoins()
         {
             var joinsString = GetJoinsString();
-            return joinsString.Select(join => JoinModel.Parse(join,AllTables)).ToList();
+            var allTables = new List<TableInfoModel>();
+            allTables.AddRange(AllTables);
+            allTables.Add(FromTable);
+            return joinsString.Select(join => JoinModel.Parse(join,allTables)).ToList();
         }
 
         public WhereGroup GetWhere()
@@ -67,8 +69,6 @@ namespace SqlParser.Parser
             var orderBys = GetOrderBysString();
             return orderBys.Select(orderBy => OrderByModel.Parse(orderBy)).ToList();
         }
-
-       
         #endregion
 
         #region Helpers
@@ -87,7 +87,7 @@ namespace SqlParser.Parser
                     {
                         return new ColumnModel
                         {
-                            ColumnName = splitedColumn[1],
+                            ColumnAlias = splitedColumn[1],
                             TableName = splitedColumn[0]
                         };
                     }

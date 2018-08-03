@@ -13,7 +13,7 @@ namespace SqlParser.Parser.Models
 
         public WhereGroup JoinCondition { get; set; }
 
-        public static FullJoinModel Parse(string joinStatement,List<TableInfoModel> allTables)
+        public static FullJoinModel Parse(string joinStatement, List<TableInfoModel> allTables)
         {
             if (string.IsNullOrEmpty(joinStatement))
             {
@@ -30,7 +30,7 @@ namespace SqlParser.Parser.Models
                     }
                     return table.Name == matches.Groups[1].Value;
                 });
-                var joinModel =  new JoinModel
+                var joinModel = new JoinModel
                 {
                     ToTable = new TableViewModel
                     {
@@ -45,7 +45,11 @@ namespace SqlParser.Parser.Models
                             new WhereModel
                             {
                                 ColumnAlias = matches.Groups[4].Value,
-                                CompareTo = matches.Groups[6].Value,
+                                TableToColumn=new ColumnModel
+                                {
+                                    ColumnAlias= matches.Groups[6].Value,
+                                    TableName = tableTo.Name
+                                },
                                 Comparison = "="
                             }
                         },
@@ -59,9 +63,63 @@ namespace SqlParser.Parser.Models
                     FromTable = matches.Groups[3].Value,
                     Join = joinModel
                 };
-              
+
             }
             return null;
         }
+
+        #region Helpers
+
+        //private static List<WhereModel> ToWhereModelList(string groupString, List<TableInfoModel> allTables)
+        //{
+        //    var wheresList = new List<WhereModel>();
+        //    if (string.IsNullOrEmpty(groupString))
+        //    {
+        //        return null;
+        //    }
+        //    var matches = groupString.GetMatchWithPattern(@"\W*(\w+).(\w+)\W+(\w+).(\w+)\s*(\w*)");
+        //    while (matches.Success)
+        //    {
+        //        var tableName = GetTableNameFromString(matches.Groups[1].Value);
+        //        var whereModel = new WhereModel
+        //        {
+
+        //            ColumnAlias = matches.Groups[2].Value,
+        //            CompareTo = matches.Groups[4].Value,
+        //            Comparison = "=",
+        //            UseOr = matches.Groups[5].Value == "OR"
+        //        };
+        //        wheresList.Add(whereModel);
+        //        matches = matches.NextMatch();
+
+        //    }
+        //    var trimmedWhereString = groupString.TrimStart(' ');
+        //    var lastWhere = wheresList.LastOrDefault();
+        //    if (lastWhere != null)
+        //    {
+        //        lastWhere.UseOr = trimmedWhereString.StartsWith("OR");
+        //    }
+        //    return wheresList;
+
+        //}
+
+
+        //private static string GetTableNameFromString(string str)
+        //{
+        //    var strChars = str.ToCharArray();
+        //    Array.Reverse(strChars);
+        //    var tableNameString = string.Empty;
+        //    for (int i = 0; i < strChars.Length; i++)
+        //    {
+        //        if (!char.IsLetterOrDigit(strChars[i]))
+        //        {
+        //            break;
+        //        }
+        //        tableNameString += strChars[i];
+        //    }
+
+        //    return new String(tableNameString.Reverse().ToArray());
+        //}
+        #endregion
     }
 }

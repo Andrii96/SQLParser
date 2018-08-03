@@ -67,7 +67,6 @@
     <Compile Include="Models\WhereModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqlCommand.cs" />
-    <Compile Include="SqlQuery.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

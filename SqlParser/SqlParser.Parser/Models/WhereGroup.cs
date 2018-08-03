@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace SqlParser.Parser.Models
 {
+    public delegate List<WhereModel> ConvertToWhereList(string groupString, List<TableInfoModel> allTables);
     public class WhereGroup
     {
         public List<WhereModel> WhereStatements { get; set; }
@@ -16,7 +17,7 @@ namespace SqlParser.Parser.Models
 
         public bool IsExternal { get; set; } = false;
 
-        public static WhereGroup ToWhereGroup(string whereString,List<TableInfoModel> allTables)
+        public static WhereGroup ToWhereGroup(string whereString,List<TableInfoModel> allTables, ConvertToWhereList converter=null)
         {
             if (string.IsNullOrEmpty(whereString))
             {
@@ -69,7 +70,8 @@ namespace SqlParser.Parser.Models
                         i = groupEnd - 1;
                         continue;
                     }
-                    var wheres = ToWhereModelList(groupString, allTables);
+                    var convertMethod = converter ?? ToWhereModelList;
+                    var wheres = convertMethod(groupString, allTables);
                     if (current == null)
                     {
                         current = new FullWhereModel { Parent = parent,Group = new WhereGroup() { WhereGroups = new List<WhereGroup>(), WhereStatements=new List<WhereModel>()} };
@@ -89,24 +91,42 @@ namespace SqlParser.Parser.Models
             {
                 return null;
             }
-            var pattern = @"(.*?)\.\W*(\w+)\s*(IS\s*NOT|IS|LIKE|[<,>,=]|<>)\s*('.*?'|\w+)\s*(\w*)";
+            string pattern = @"(.*?)\.\W*(\w+)\s*(IS\s*NOT|IS|LIKE|[<,>,=]|<>)\s*('.*?'|(\w+\.\w+)|\w+)\s*(\w*)";
             var matches = groupString.GetMatchWithPattern(pattern);
-          
+            
             while (matches.Success)
             {
                 var tableName = GetTableNameFromString(matches.Groups[1].Value);
                 var columnName = matches.Groups[2].Value;
                 var comparison = matches.Groups[3].Value;
-                var compareTo = matches.Groups[4].Value;
-                var useOr = matches.Groups[5].Value.ToUpper() == "OR";
+                var useOr = matches.Groups[6].Value.ToUpper() == "OR";
                 var whereModel = new WhereModel
                 {
-                    TableId = allTables.FirstOrDefault(t=>t.TableAlias.Trim(' ') == tableName.Trim(' ')).Id,
+                    TableId = allTables.FirstOrDefault(t => t.TableAlias.Trim(' ') == tableName.Trim(' ')).Id,
                     ColumnAlias = columnName,
-                    CompareTo = compareTo,
                     Comparison = comparison,
-                    UseOr = useOr
+                    UseOr = useOr,
+                    TableToColumn = new ColumnModel()
                 };
+                if (string.IsNullOrEmpty(matches.Groups[5].Value))
+                {
+                    var value = matches.Groups[4].Value;
+                    whereModel.Value = value;
+                }
+                else
+                {
+                    var tableColumn = matches.Groups[5].Value;
+                    var tableColumnInfo = tableColumn.Split('.');
+                    var tableTo = allTables.FirstOrDefault(t => t.TableAlias == tableColumnInfo[0]);
+                    var column = new ColumnModel
+                    {
+                        ColumnAlias = tableColumnInfo[1],
+                        TableName = tableTo.ToString()
+                    };
+                    whereModel.TableToColumn = column;
+                }
+               
+                
                 list.Add(whereModel);
                 matches = matches.NextMatch();
             }

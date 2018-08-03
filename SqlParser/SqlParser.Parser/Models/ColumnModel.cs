@@ -8,7 +8,7 @@ namespace SqlParser.Parser.Models
 {
     public class ColumnModel
     {
-        public string ColumnName { get; set; }
+        public string ColumnAlias { get; set; }
         public string TableName { get; set; }
     }
 }
