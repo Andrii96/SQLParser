@@ -9,6 +9,7 @@ namespace SqlParser.Parser.Models
     public class ColumnModel
     {
         public string ColumnAlias { get; set; }
-        public string TableName { get; set; }
+        public long TableId { get; set; }
+        public string TableName { get; set;}
     }
 }

@@ -45,10 +45,11 @@ namespace SqlParser.Parser.Models
                             new WhereModel
                             {
                                 ColumnAlias = matches.Groups[4].Value,
-                                TableToColumn=new ColumnModel
+                                CompareWithColumn=new ColumnModel
                                 {
                                     ColumnAlias= matches.Groups[6].Value,
-                                    TableName = tableTo.Name
+                                    TableId = tableTo.Id,
+                                    //TableName = tableTo.Name
                                 },
                                 Comparison = "="
                             }

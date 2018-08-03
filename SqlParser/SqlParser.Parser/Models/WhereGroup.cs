@@ -106,7 +106,7 @@ namespace SqlParser.Parser.Models
                     ColumnAlias = columnName,
                     Comparison = comparison,
                     UseOr = useOr,
-                    TableToColumn = new ColumnModel()
+                    CompareWithColumn = new ColumnModel()
                 };
                 if (string.IsNullOrEmpty(matches.Groups[5].Value))
                 {
@@ -121,9 +121,9 @@ namespace SqlParser.Parser.Models
                     var column = new ColumnModel
                     {
                         ColumnAlias = tableColumnInfo[1],
-                        TableName = tableTo.ToString()
+                        TableId = tableTo.Id
                     };
-                    whereModel.TableToColumn = column;
+                    whereModel.CompareWithColumn = column;
                 }
                
                 

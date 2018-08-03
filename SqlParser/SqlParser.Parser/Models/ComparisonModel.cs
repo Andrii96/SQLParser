@@ -14,7 +14,7 @@ namespace SqlParser.Parser.Models
 
         public string Comparison { get; set; }
 
-        public ColumnModel TableToColumn { get; set; }
+        public ColumnModel CompareWithColumn { get; set; }
 
         public string Value { get; set; }
     }
