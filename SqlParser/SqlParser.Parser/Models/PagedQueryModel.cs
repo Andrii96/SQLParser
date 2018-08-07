@@ -8,7 +8,7 @@ namespace SqlParser.Parser.Models
 {
     public class PagedQueryModel
     {
-        public QueryModel Query { get; set; }
+        public List<QueryModel> Queries { get; set; }
 
         public PaginationModel PagingModel { get; set; }
     }

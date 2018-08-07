@@ -15,14 +15,14 @@ namespace SqlParser.Parser.Models
 
         public static OrderByModel Parse(string orderByString)
         {
-            var pattern = @"(.*?)\.(\w+)\s*(\w*)";
+            var pattern = @"(\w+)\s*(\w*)";
             var orderByMatches = orderByString.GetMatchWithPattern(pattern);
             if (orderByMatches != null)
             {
                 return new OrderByModel
                 {
-                    Direction = orderByMatches.Groups[3].Value.Trim(' ') == string.Empty ? "ASC" : orderByMatches.Groups[2].Value.Trim(' '),
-                    OrderByAlias = orderByMatches.Groups[2].Value
+                    Direction = orderByMatches.Groups[2].Value.Trim(' ') == string.Empty ? "ASC" : orderByMatches.Groups[2].Value.Trim(' '),
+                    OrderByAlias = orderByMatches.Groups[1].Value
                 };
             }
             return null;

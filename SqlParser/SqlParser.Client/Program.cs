@@ -21,18 +21,26 @@ namespace SqlParser.Client
                 return;
             }
             var sqlScript = File.ReadAllText(args[0]);
-            var command = new SqlCommand(sqlScript);
-            var queries = command.ParseToQueryTableModelList();
-            var pagedQuery = new PagedQueryModel
+            var selectments = SqlScript.GetSelectments(sqlScript);
+            var queriesModelList = new List<QueryModel>();
+            foreach (var select in selectments)
             {
-                Query = new QueryModel
+                var selectParser = new SqlParser.Parser.SqlParser(select);
+                var queries = selectParser.ParseToQueryTableModelList();
+                var queryModel = new QueryModel
                 {
                     TableQueries = queries,
                     CalculatedColumns = new List<CalculatedColumnModel>(),
                     ColorRules = new List<ColorRuleModel>(),
-                    SelectDistinct = command.Distinct,
-                    Filters = new List<WhereGroup> { command.GetWhere() }
-                },
+                    SelectDistinct = selectParser.Distinct,
+                    Filters = new List<WhereGroup> { selectParser.GetWhere() }
+                };
+                queriesModelList.Add(queryModel);
+            }
+           
+            var pagedQuery = new PagedQueryModel
+            {
+                Queries = queriesModelList,
                 PagingModel = new PaginationModel
                 {
                     PageNumber = 1,

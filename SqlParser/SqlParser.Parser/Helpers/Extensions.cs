@@ -10,7 +10,7 @@ namespace SqlParser.Parser.Helpers
 {
     public static class Extensions
     {
-        public static List<QueryTableModel> ParseToQueryTableModelList(this SqlCommand sqlCommand)
+        public static List<QueryTableModel> ParseToQueryTableModelList(this SqlParser sqlCommand)
         {
             var joins = sqlCommand.GetJoins();
             var fromTable = sqlCommand.FromTable;
@@ -55,9 +55,10 @@ namespace SqlParser.Parser.Helpers
             }
             return queryTableModels;
         }
-        public static Match GetMatchWithPattern(this string value, string pattern)
+        public static Match GetMatchWithPattern(this string value, string pattern,RegexOptions options= RegexOptions.IgnoreCase)
         {
-            var regex = new Regex(pattern, RegexOptions.IgnoreCase);
+            var regex = new Regex(pattern, options);
+           
             var match = regex.Match(value);
             return match.Success ? match : null;
         }
@@ -90,9 +91,9 @@ namespace SqlParser.Parser.Helpers
         }
 
         #region Helpers
-        private static List<SelectedColumnModel> GetColumnsFromTable(SqlCommand sqlCommand,string tableName, string tableAlias)
+        private static List<SelectedColumnModel> GetColumnsFromTable(SqlParser sqlCommand,string tableName, string tableAlias)
         {//TODO: Check method logic
-           
+            var a = sqlCommand.GetSelectedColumns();
             return sqlCommand.GetSelectedColumns()
                              .Where(column => column.TableName.Trim(' ') == tableAlias.Trim(' '))
                              .Select(column => SelectedColumnModel.Parse(column.ColumnAlias))

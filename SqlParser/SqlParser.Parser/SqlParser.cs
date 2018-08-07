@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace SqlParser.Parser
 {
-    public class SqlCommand
+    public class SqlParser
     {
         #region Properties
         public string SqlScript { get; private set; }
@@ -25,7 +25,7 @@ namespace SqlParser.Parser
 
         #region Constructor
 
-        public SqlCommand(string sqlScript)
+        public SqlParser(string sqlScript)
         {
             SqlScript = sqlScript;
             AllTables = GetTables();
@@ -72,6 +72,8 @@ namespace SqlParser.Parser
         #endregion
 
         #region Helpers
+
+        
        
         private List<ColumnModel> GetAllSelectedColumns()
         {
