@@ -7,19 +7,28 @@ using System.Threading.Tasks;
 
 namespace SqlParser.Parser.Models
 {
+    public enum JoinTypes
+    {
+        Inner,
+        Left,
+        Right,
+        Full
+    }
     public class JoinModel
     {
         public TableViewModel ToTable { get; set; }
 
+        public JoinTypes JoinType { get; set; } = JoinTypes.Left;
+
         public WhereGroup JoinCondition { get; set; }
 
-        public static FullJoinModel Parse(string joinStatement, List<TableInfoModel> allTables)
+        public static FullJoinModel Parse(BaseJoin join, List<TableInfoModel> allTables)
         {
-            if (string.IsNullOrEmpty(joinStatement))
+            if (string.IsNullOrEmpty(join.JoinStatement))
             {
                 return null;
             }
-            var matches = joinStatement.GetMatchWithPattern(@"(\w+)(.*?)on\s+(\w+).(\w+)\W+(\w+).(\w+)");
+            var matches = join.JoinStatement.GetMatchWithPattern(@"(\w+)(.*?)on\s+(\w+).(\w+)\W+(\w+).(\w+)");
             if (matches != null)
             {
                 var tableTo = allTables.FirstOrDefault(table =>
@@ -56,7 +65,8 @@ namespace SqlParser.Parser.Models
                         },
                         IsExternal = false,
                         WhereGroups = new List<WhereGroup>()
-                    }
+                    },
+                    JoinType = GetJoinType(join.JoinType)
                 };
 
                 return new FullJoinModel
@@ -70,6 +80,18 @@ namespace SqlParser.Parser.Models
         }
 
         #region Helpers
+
+        private static JoinTypes GetJoinType(string type)
+        {
+            switch(type.Trim(' ').ToLower())
+            {
+                case "right": return JoinTypes.Right;
+                case "left": return JoinTypes.Left;
+                case "inner": return JoinTypes.Inner;
+                case "full": return JoinTypes.Full;
+                default: return JoinTypes.Left;
+            }
+        }
 
         //private static List<WhereModel> ToWhereModelList(string groupString, List<TableInfoModel> allTables)
         //{

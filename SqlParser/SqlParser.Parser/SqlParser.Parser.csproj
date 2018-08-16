@@ -44,12 +44,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Helpers\Extensions.cs" />
+    <Compile Include="Models\BaseJoin.cs" />
     <Compile Include="Models\CalculatedColumnEntity.cs" />
     <Compile Include="Models\CalculatedColumnModel.cs" />
     <Compile Include="Models\CalculatedEntityType.cs" />
     <Compile Include="Models\ColorRuleModel.cs" />
     <Compile Include="Models\ColumnModel.cs" />
     <Compile Include="Models\ComparisonModel.cs" />
+    <Compile Include="Models\ExtendedFunctionModel.cs" />
     <Compile Include="Models\FullJoinModel.cs" />
     <Compile Include="Models\FullWhereModel.cs" />
     <Compile Include="Models\FunctionModel.cs" />

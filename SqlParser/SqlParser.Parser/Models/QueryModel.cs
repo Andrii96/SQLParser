@@ -18,8 +18,6 @@ namespace SqlParser.Parser.Models
 
         public List<CalculatedColumnModel> CalculatedColumns { get; set; }
 
-        public List<ColorRuleModel> ColorRules { get; set; }
-
-        public object TablePositionData { get; set; }
+        public object TablePositionData { get; set; } = new object();
     }
 }

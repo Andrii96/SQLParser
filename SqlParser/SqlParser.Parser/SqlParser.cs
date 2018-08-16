@@ -11,6 +11,9 @@ namespace SqlParser.Parser
 {
     public class SqlParser
     {
+
+        #region fields
+        #endregion
         #region Properties
         public string SqlScript { get; private set; }
 
@@ -21,6 +24,8 @@ namespace SqlParser.Parser
         public bool Distinct => SqlScript.GetMatchWithPattern(@"distinct") != null;
 
         public TableInfoModel FromTable { get; private set; }
+
+        public List<ExtendedFunctionModel> Functions { get; } = new List<ExtendedFunctionModel>();
         #endregion
 
         #region Constructor
@@ -81,20 +86,41 @@ namespace SqlParser.Parser
             if (matches != null)
             {
                 var columns = matches.Groups[1].Value.Split(',').Select(c => c.Trim(' ', '\r', '\n')).ToList();
-
-                return columns.Select(column =>
+                var columnsList = new List<ColumnModel>();
+                columns.ForEach(column =>
                 {
-                    var splitedColumn = column.Split('.');
-                    if (splitedColumn.Length > 1)
+                    var functionPattern = @"(.*?)\(\s*(\w+)\.(\w+)\s*\)\s*as\s*(\w+)";
+                    var functionMatches = column.GetMatchWithPattern(functionPattern);
+                    if (functionMatches == null)
                     {
-                        return new ColumnModel
+                        var splitedColumn = column.Split('.');
+                        if (splitedColumn.Length > 1)
                         {
-                            ColumnAlias = splitedColumn[1],
-                            TableName = splitedColumn[0]
-                        };
+                            columnsList.Add( new ColumnModel
+                            {
+                                ColumnAlias = splitedColumn[1],
+                                TableName = splitedColumn[0]
+                            });
+                        }
                     }
-                    return new ColumnModel();
-                }).ToList();
+                    else
+                    {
+                        var functionModel = new ExtendedFunctionModel
+                        {
+                            Function = new FunctionModel
+                            {
+                                Alias = functionMatches.Groups[4].Value,
+                                Function = functionMatches.Groups[1].Value,
+                                ColumnAlias = functionMatches.Groups[3].Value
+                            },
+                            TableId = GetTableId(functionMatches.Groups[2].Value)
+                        };
+                        Functions.Add(functionModel);
+                    }
+                    //return new ColumnModel();
+                });
+
+                return columnsList;
             }
             return null;
         }
@@ -117,15 +143,20 @@ namespace SqlParser.Parser
             return null;
         }
 
-        private List<string> GetJoinsString()
+        private List<BaseJoin> GetJoinsString()
         {
-            List<string> joinStatements = new List<string>();
-            var matches = SqlScript.GetMatchWithPattern(@"join (.*?)(?=join|where|\n)");
+            List<BaseJoin> joinStatements = new List<BaseJoin>();
+            var matches = SqlScript.GetMatchWithPattern(@"(right|left|inner|full)\s*join (.*?)(?=join|where|\n)");
             if (matches != null)
             {
                 while (matches.Success)
                 {
-                    joinStatements.Add(matches.Groups[1].Value);
+                    joinStatements.Add(new BaseJoin
+                    {
+                        JoinType = matches.Groups[1].Value,
+                        JoinStatement = matches.Groups[2].Value
+
+                    });
                     matches = matches.NextMatch();
                 }
             }
@@ -139,11 +170,11 @@ namespace SqlParser.Parser
             var pattern = @"\s*(\w+)\s*(.*?)on";
             foreach (var join in joins)
             {
-                var match = join.GetMatchWithPattern(pattern);
+                var match = join.JoinStatement.GetMatchWithPattern(pattern);
                 if (match != null)
                 {
-                    var tableName = match.Groups[1].Value;
-                    var tableAlias = match.Groups[2].Value;
+                    var tableName = match.Groups[1].Value.Trim(' ');
+                    var tableAlias = match.Groups[2].Value.Trim(' ');
                     if(tableAlias == string.Empty)
                     {
                         tableAlias = tableName;
@@ -156,7 +187,7 @@ namespace SqlParser.Parser
 
         private string GetWhereString()
         {
-            var matches = SqlScript.GetMatchWithPattern(@"where\s*(.*?)(?=group|order|\n|$)");
+            var matches = SqlScript.GetMatchWithPattern(@"where\s*(.*?)(?=group\s*by|order\s*by|\n|$)");
             if (matches != null)
             {
                 return matches.Groups[1].Value;
@@ -173,6 +204,15 @@ namespace SqlParser.Parser
                 return new List<string>(matches.Groups[1].Value.Split(','));
             }
             return new List<string>();
+        }
+
+        private long GetTableId(string tableAlias)
+        {
+            var allTables = new List<TableInfoModel>();
+            allTables.AddRange(AllTables);
+            allTables.Add(FromTable);
+            var table = allTables.FirstOrDefault(t => t.TableAlias.Trim(' ') == tableAlias.Trim(' '));
+            return table != null ? table.Id : 0;
         }
         #endregion
     }

@@ -16,19 +16,19 @@ namespace SqlParser.Parser.Helpers
             var fromTable = sqlCommand.FromTable;
             var hasGroupBy = sqlCommand.HasGroupBy;
             var orderBys = sqlCommand.GetOrderBys();
-
+            var selectedColumns = sqlCommand.GetSelectedColumns();
             var firstQuery = new QueryTableModel
             {
-                Joins = joins.Where(join => join.FromTable == fromTable.Name).Select(join => join.Join).ToList(),
+                Joins = joins.Where(join => join.FromTable == fromTable.TableAlias).Select(join => join.Join).ToList(),
                 Id = fromTable.Id,
                 TableName = fromTable.Name,
                 TableSchema = fromTable.Schema,
                 ExplicitFilters = new List<string>(),
-                SelectedColumns = GetColumnsFromTable(sqlCommand,fromTable.Name, fromTable.TableAlias),
+                SelectedColumns = GetColumnsFromTable(selectedColumns, fromTable.Name, fromTable.TableAlias),
                 GroupByColumns = new List<string>(),
                 Sortings = new List<OrderByModel>(),
-                Functions = new List<FunctionModel>()
-            };
+                Functions = sqlCommand.Functions.Where(f => f.TableId == fromTable.Id).Select(f=>f.Function).ToList()
+        };
             firstQuery.Sortings = GetOrderBysForTable(orderBys, firstQuery.SelectedColumns);
             List<QueryTableModel> queryTableModels = new List<QueryTableModel> { firstQuery };
 
@@ -36,15 +36,15 @@ namespace SqlParser.Parser.Helpers
             {
                 var query = new QueryTableModel
                 {
-                    SelectedColumns = GetColumnsFromTable(sqlCommand,table.Name, table.TableAlias),
+                    SelectedColumns = GetColumnsFromTable(selectedColumns, table.Name, table.TableAlias),
                     Id = table.Id,
                     TableName = table.Name,
                     TableSchema = table.Schema,
                     ExplicitFilters = new List<string>(),
-                    Joins = joins.Where(join => join.FromTable == table.Name).Select(join => join.Join).ToList() ?? new List<JoinModel>(),
+                    Joins = joins.Where(join => join.FromTable == table.TableAlias).Select(join => join.Join).ToList() ?? new List<JoinModel>(),
                     GroupByColumns = new List<string>(),
                     Sortings = new List<OrderByModel>(),
-                    Functions = new List<FunctionModel>()
+                    Functions = sqlCommand.Functions.Where(f=>f.TableId == table.Id).Select(f=>f.Function).ToList()
                 };
                 query.Sortings = GetOrderBysForTable(orderBys, query.SelectedColumns);
                 queryTableModels.Add(query);
@@ -91,13 +91,11 @@ namespace SqlParser.Parser.Helpers
         }
 
         #region Helpers
-        private static List<SelectedColumnModel> GetColumnsFromTable(SqlParser sqlCommand,string tableName, string tableAlias)
+        private static List<SelectedColumnModel> GetColumnsFromTable(List<ColumnModel> columns,string tableName, string tableAlias)
         {//TODO: Check method logic
-            var a = sqlCommand.GetSelectedColumns();
-            return sqlCommand.GetSelectedColumns()
-                             .Where(column => column.TableName.Trim(' ') == tableAlias.Trim(' '))
-                             .Select(column => SelectedColumnModel.Parse(column.ColumnAlias))
-                             .ToList();
+            return columns.Where(column => column.TableName.Trim(' ') == tableAlias.Trim(' '))
+                          .Select(column => SelectedColumnModel.Parse(column.ColumnAlias))
+                          .ToList();
         }
 
         private static List<string> GetGroupByForTable(List<SelectedColumnModel> selectedColumns)

@@ -56,7 +56,7 @@ namespace SqlParser.Parser.Models
                         groupEnd++;
                     }
                     var groupString = whereString.Substring(i, groupEnd - i);
-                    if(groupString.Trim(' ') == string.Empty)
+                    if (groupString.Trim(' ','\r') == string.Empty)
                     {
                         i = groupEnd - 1;
                         continue;
@@ -66,6 +66,10 @@ namespace SqlParser.Parser.Models
                     if (isOr || isAnd)
                     {
                         var lastGroup = current.Group.WhereGroups.LastOrDefault();
+                        while (lastGroup.WhereGroups.Count > 0)
+                        {
+                            lastGroup = lastGroup.WhereGroups.LastOrDefault();
+                        }
                         lastGroup.WhereStatements.LastOrDefault().UseOr = isOr;
                         i = groupEnd - 1;
                         continue;
@@ -91,7 +95,7 @@ namespace SqlParser.Parser.Models
             {
                 return null;
             }
-            string pattern = @"(.*?)\.\W*(\w+)\s*(IS\s*NOT|IS|LIKE|[<,>,=]|<>)\s*('.*?'|(\w+\.\w+)|\w+)\s*(\w*)";
+            string pattern = @"(.*?)\.\W*(\w+)\s*(IS\s*NOT|IS|LIKE|<=|>=|[<,>,=]|<>)\s*('.*?'|(\w+\.\w+)|\w+)\s*(\w*)";
             var matches = groupString.GetMatchWithPattern(pattern);
             
             while (matches.Success)

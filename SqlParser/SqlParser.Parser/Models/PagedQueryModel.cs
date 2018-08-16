@@ -10,6 +10,8 @@ namespace SqlParser.Parser.Models
     {
         public List<QueryModel> Queries { get; set; }
 
+        public List<ColorRuleModel> ColorRules { get; set; }
+
         public PaginationModel PagingModel { get; set; }
     }
 }

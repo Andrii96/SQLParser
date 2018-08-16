@@ -31,7 +31,6 @@ namespace SqlParser.Client
                 {
                     TableQueries = queries,
                     CalculatedColumns = new List<CalculatedColumnModel>(),
-                    ColorRules = new List<ColorRuleModel>(),
                     SelectDistinct = selectParser.Distinct,
                     Filters = new List<WhereGroup> { selectParser.GetWhere() }
                 };
@@ -45,7 +44,8 @@ namespace SqlParser.Client
                 {
                     PageNumber = 1,
                     PageSize = 10
-                }
+                },
+                ColorRules = new List<ColorRuleModel>()
             };
 
             var json = JsonConvert.SerializeObject(pagedQuery);
